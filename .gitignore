@@ -1,3 +1,13 @@
+staticfiles/
+mediafiles/
+backend/static/
+media/
+static/admin/
+
+static/admin/
+static/drf-yasg
+static/rest_framework/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -35,6 +45,8 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+# Installer logs
+pip-log.txt
 
 # Unit test / coverage reports
 htmlcov/
@@ -54,6 +66,7 @@ cover/
 # Translations
 *.mo
 *.pot
+
 
 # Django stuff:
 *.log
@@ -129,6 +142,12 @@ celerybeat.pid
 
 # Environments
 .env
+
+# Environments
+.env
+.env.prod
+.env.dev
+.env.staging
 .venv
 env/
 venv/
