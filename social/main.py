@@ -1,24 +1,11 @@
-from pydantic import BaseModel
-
-from fastapi import FastAPI, Request
-
-
-class Product(BaseModel):
-    prodId: int
-    prodName: str
-    price: float
-    stock: int
-
+from fastapi import FastAPI
+from router.posts import router as post_router
 
 app = FastAPI()
-
-
-@app.post("/product")
-async def addnew(request: Request, product: Product):
-    return product
+app.include_router(post_router)
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="main:app", port=8443, log_level="info")
+    uvicorn.run(app, host="localhost", port=8443, log_level="info")
