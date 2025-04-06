@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from router.posts import router as post_router
+from social.router.posts import router as post_router
 
 app = FastAPI()
 app.include_router(post_router)

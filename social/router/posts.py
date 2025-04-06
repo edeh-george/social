@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from models.post import Comment, UserPost, UserPostsIn, UserPostWithComments
+from social.models.post import Comment, UserPost, UserPostsIn, UserPostWithComments
 
 router = APIRouter()
 post_table = {}
