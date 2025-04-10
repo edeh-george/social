@@ -1,5 +1,7 @@
+from models.post import Comment, UserPost, UserPostsIn, UserPostWithComments
+
 from fastapi import APIRouter, HTTPException
-from social.models.post import Comment, UserPost, UserPostsIn, UserPostWithComments
+from typing import Union
 
 router = APIRouter()
 post_table = {}
@@ -10,7 +12,7 @@ def find_post(post_id: int):
     return post_table.get(post_id)
 
 
-@router.post("/", response_model=UserPost, status_code=201)
+@router.post("/", response_model=Union[UserPost, None], status_code=201)
 async def create_post(post: UserPostsIn):
     data = post.model_dump()
     last_record_id = len(post_table)

@@ -1,11 +1,23 @@
-from fastapi import FastAPI
-from social.router.posts import router as post_router
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+from database import database
+from router.posts import router as post_router
+
+from fastapi import FastAPI
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await database.connect()
+    yield
+    await database.disconnect()
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(post_router)
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="localhost", port=8443, log_level="info")
+    uvicorn.run("main:app", host="localhost", port=8443, log_level="info", reload=True)
