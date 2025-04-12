@@ -16,3 +16,10 @@ uvicorn==0.34.0
 uvloop==0.21.0
 watchfiles==1.0.3
 websockets==14.1
+SQLAlchemy==2.0.40
+databases[aiosqlite]
+python-dotenv
+pydantic-settings
+rich
+asgi-correlation-id
+python-json-logger
