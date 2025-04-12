@@ -1,3 +1,4 @@
+import os
 from typing import AsyncGenerator, Generator
 
 import pytest
@@ -5,7 +6,9 @@ from httpx import AsyncClient
 
 from fastapi.testclient import TestClient
 from social.main import app
-from social.router.posts import comment_table, post_table
+
+os.environ["ENV_STATE"] = "test"
+from social.database import database
 
 
 @pytest.fixture(scope="session")
@@ -20,9 +23,9 @@ def client() -> Generator:
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
-    post_table.clear()
-    comment_table.clear()
+    await database.connect()
     yield
+    await database.disconnect()
 
 
 @pytest.fixture
