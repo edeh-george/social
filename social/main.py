@@ -3,7 +3,8 @@ from contextlib import asynccontextmanager
 
 from database import database
 from logging_conf import configure_logging
-from router.posts import router as post_router
+from routers.posts import router as post_router
+from routers.users import router as user_router
 
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
@@ -25,6 +26,7 @@ app.add_middleware(CorrelationIdMiddleware)
 
 
 app.include_router(post_router)
+app.include_router(user_router)
 
 
 @app.exception_handler(HTTPException)

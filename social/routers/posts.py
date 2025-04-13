@@ -50,8 +50,8 @@ async def create_comment(comment: Comment):
 async def get_comments_on_post(post_id: int):
     logger.info("Getting comments on post")
     query = comment_table.select().where(
-        comment_table.post_id == post_id
-    )  # in the tutorial the guy did a comment_table.c.post_id. I don't know where he got the 'c' from
+        comment_table.c.post_id == post_id
+    ) 
     logger.debug(query)
     return await database.fetch_all(query)
 

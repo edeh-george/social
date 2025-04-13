@@ -4,3 +4,4 @@ isort
 pytest 
 httpx==0.28.1
 pytest-asyncio
+pytest-mock
