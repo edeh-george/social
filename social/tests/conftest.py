@@ -2,6 +2,7 @@ import os
 from typing import AsyncGenerator, Generator
 
 import pytest
+import sqlalchemy
 from database import user_table
 from httpx import AsyncClient
 
@@ -9,7 +10,6 @@ from fastapi.testclient import TestClient
 from social.main import app
 
 os.environ["ENV_STATE"] = "test"
-os.environ.setdefault("DATABASE_URL", "sqlite:///test.db")
 from social.database import database
 
 
@@ -36,13 +36,14 @@ async def async_client(client) -> AsyncGenerator:
         yield ac
 
 
-
-
 @pytest.fixture()
 async def registered_user(async_client: AsyncClient) -> dict:
     user_details = {"email": "test@example.net", "password": "1234"}
     await async_client.post("/register", json=user_details)
-    query = user_table.select().where(user_table.c.email == user_details.email)
+    query = sqlalchemy.select(user_table).where(
+        user_table.c.email == user_details["email"]
+    )
     user = await database.fetch_one(query)
     user_details["id"] = user.id
+    print(user_details)
     return user_details
