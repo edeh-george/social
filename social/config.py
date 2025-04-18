@@ -3,17 +3,16 @@ from pathlib import Path
 from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = BASE_DIR / ".env"
 
 
 class BaseConfig(BaseSettings):
-    ENV_STATE: Optional[str] = Field(default="", env="ENV_STATE")
-    DATABASE_URL: Optional[str] = Field(default="", env="DATABASE_URL")
+    ENV_STATE: str = "dev"
+    DATABASE_URL: Optional[str] = ""
     DB_FORCE_ROLL_BACK: bool = False
-    SECRET_KEY: str = Field(default="", env="SECRET_KEY")
+    SECRET_KEY: Optional[str] = ""
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
@@ -24,6 +23,7 @@ class BaseConfig(BaseSettings):
 
 
 class DevConfig(BaseConfig):
+    DATABASE_URL: str = f"sqlite:///{BASE_DIR}/test.db"
     model_config = SettingsConfigDict(
         env_prefix="DEV_",
         env_file=ENV_FILE,
@@ -44,7 +44,7 @@ class ProdConfig(BaseConfig):
 
 
 class TestConfig(BaseConfig):
-    DATABASE_URL: str = "sqlite:///test.db"
+    DATABASE_URL: str = "sqlite:///{BASE_DIR}/test.db"
     DB_FORCE_ROLL_BACK: bool = True
     SECRET_KEY: str = "test-secret"
 
@@ -57,7 +57,6 @@ class TestConfig(BaseConfig):
     )
 
 
-
 @lru_cache()
 def get_config(env_state: Optional[str] = None) -> BaseConfig:
     env_state = env_state or BaseConfig().ENV_STATE
@@ -68,5 +67,6 @@ def get_config(env_state: Optional[str] = None) -> BaseConfig:
     }
     config_class = config_classes.get(env_state.lower(), DevConfig)
     return config_class()
+
 
 config = get_config(BaseConfig().ENV_STATE)

@@ -9,7 +9,7 @@ async def create_post(async_client: AsyncClient, body: str) -> dict:
 
 @pytest.fixture()
 async def created_post(async_client: AsyncClient):
-    return await create_post(async_client, "This is a test post.")
+    return await create_post(async_client, "This is a test post")
 
 
 @pytest.mark.anyio

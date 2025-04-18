@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from social.main import app
 
 os.environ["ENV_STATE"] = "test"
+from fastapi import HTTPException, status
 from social.database import database
 
 
@@ -44,6 +45,10 @@ async def registered_user(async_client: AsyncClient) -> dict:
         user_table.c.email == user_details["email"]
     )
     user = await database.fetch_one(query)
+    if not user:
+        raise HTTPException(
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="User not stored in database"
+        )
     user_details["id"] = user.id
-    print(user_details)
     return user_details

@@ -3,7 +3,7 @@ import logging
 
 from config import config
 from database import database, user_table
-from jose import jwt
+from jose import jwt, ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
 
 from fastapi import HTTPException, status
@@ -19,6 +19,7 @@ pwd_context = CryptContext(schemes=["bcrypt"])
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"}
 )
 
 
@@ -60,4 +61,24 @@ async def authenticate_user(email: str, password: str):
     if not verify_password(password, user["password"]):
         raise credentials_exception
 
+    return user
+
+
+async def get_current_user(token: str):
+    try:
+        payload = jwt.decode(token, key=SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except ExpiredSignatureError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"}
+        ) from e
+    except JWTError as e:
+        raise credentials_exception from e
+    user = await get_user(email=email)
+    if user is None:
+        raise credentials_exception
     return user
