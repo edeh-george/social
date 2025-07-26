@@ -4,7 +4,9 @@ from typing import Optional
 from database import comment_table, database, post_table
 from models.post import Comment, UserPost, UserPostsIn, UserPostWithComments
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
+from models.user import User
+from security import get_current_user, oauth2_scheme
 
 router = APIRouter()
 
@@ -18,9 +20,16 @@ async def find_post(post_id: int):
     return await database.fetch_one(query)
 
 
-@router.post("/", response_model=Optional[UserPost], status_code=201)
+@router.post("/post", response_model=Optional[UserPost], status_code=201)
 async def create_post(post: UserPostsIn):
     logger.info("Creating new post")
+    current_user: User = await get_current_user(oauth2_scheme())
+
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
+        )
+
     data = post.model_dump()
     query = post_table.insert().values(data)
     last_record_id = await database.execute(query)
@@ -35,8 +44,10 @@ async def get_all_posts():
     return await database.fetch_all(query)
 
 
-@router.post("/", response_model=Comment)
+@router.post("/comment", response_model=Comment)
 async def create_comment(comment: Comment):
+    logger.info("Creating comment")
+    current_user: User = await get_current_user(oauth2_scheme())  # noqa
     post = await find_post(comment.post_id)
     if not post:
         raise HTTPException(status_code=404, details="Posts not found")
@@ -49,9 +60,7 @@ async def create_comment(comment: Comment):
 @router.get("/post/{post_id}/comment", response_model=list[Comment])
 async def get_comments_on_post(post_id: int):
     logger.info("Getting comments on post")
-    query = comment_table.select().where(
-        comment_table.c.post_id == post_id
-    ) 
+    query = comment_table.select().where(comment_table.c.post_id == post_id)
     logger.debug(query)
     return await database.fetch_all(query)
 

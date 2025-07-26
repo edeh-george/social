@@ -1,6 +1,6 @@
 annotated-types
 anyio
-bcrypt
+bcrypt==3.2.2
 click
 fastapi== 0.116.1
 h11

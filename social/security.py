@@ -5,6 +5,7 @@ from config import config
 from database import database, user_table
 from jose import jwt, ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordBearer
 
 from fastapi import HTTPException, status
 
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 SECRET_KEY = config.secret_key
 ALGORITHM = "HS256"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 pwd_context = CryptContext(schemes=["bcrypt"])
 
 
@@ -24,7 +26,7 @@ credentials_exception = HTTPException(
 
 
 def access_token_expire_minutes() -> int:
-    return config.ACCESS_TOKEN_EXPIRE_MINUTES or 30
+    return config.access_token_expire_minutes or 30
 
 
 def create_access_token(email: str):

@@ -5,7 +5,7 @@ from typing import AsyncGenerator, Generator
 import pytest
 import sqlalchemy
 from database import user_table
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from fastapi.testclient import TestClient
 from social.main import app
@@ -22,12 +22,12 @@ def anyio_backend():
     return "asyncio"
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def client() -> Generator:
     yield TestClient(app)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope='session')
 async def db() -> AsyncGenerator:
     logger.debug("Setting up database connection for tests")
     await database.connect()
@@ -39,7 +39,9 @@ async def db() -> AsyncGenerator:
 
 @pytest.fixture
 async def async_client(client) -> AsyncGenerator:
-    async with AsyncClient(base_url="http://localhost:8443") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://localhost:8443"
+    ) as ac:
         yield ac
 
 
@@ -58,3 +60,24 @@ async def registered_user(async_client: AsyncClient) -> dict:
         )
     user_details["id"] = user.id
     return user_details
+
+
+@pytest.fixture
+async def logged_in_token(async_client: AsyncClient, registered_uder: dict) -> str:
+    response = await async_client.post("/token", json=registered_user)
+    return response.json()["access_token"]
+
+
+@pytest.fixture(scope="function", autouse=True)
+async def clean_database():
+    """Clean database before each test"""
+    tables_to_clear = ["users", "posts", "comments"] 
+
+    for table in tables_to_clear:
+        try:
+            query = f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE"
+            await database.execute(query)
+        except Exception as e:
+            logger.debug(f"Could not truncate {table}: {e}")
+
+    yield

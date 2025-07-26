@@ -9,13 +9,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
-    database_url: str = "sqlite:///./app.db"
+    database_url: str = "sqlite:///./test.db"
 
     secret_key: str = "dev-secret-change-in-production__"
     db_force_rollback: bool = False
 
     debug: bool = False
     allowed_hosts: str = Field(default="localhost")
+    access_token_expire_minutes: int = 30
 
     model_config = SettingsConfigDict(case_sensitive=False, env_file_encoding="utf-8")
 
@@ -59,5 +60,5 @@ config = get_config()
 
 
 if __name__ == "__main__":
-    # print(BASE_DIR)
+    print(config)
     pass
