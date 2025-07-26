@@ -28,11 +28,11 @@ comment_table = sqlalchemy.Table(
 )
 
 engine = sqlalchemy.create_engine(
-    config.DATABASE_URL,
+    config.database_url,
     connect_args={"check_same_thread": False},
 )
 
 metadata.create_all(engine)
 database = databases.Database(
-    config.DATABASE_URL, force_rollback=config.DB_FORCE_ROLL_BACK
+    config.database_url, force_rollback=config.db_force_rollback
 )

@@ -1,7 +1,9 @@
 import logging
 from logging.config import dictConfig
 
-from config import DevConfig, config
+from config import get_environment
+
+environment = get_environment()
 
 
 def obfuscated(email: str, obfuscated_length: int) -> str:
@@ -30,13 +32,13 @@ def configure_logging() -> None:
             "filters": {
                 "correlation_id": {
                     "()": "asgi_correlation_id.CorrelationIdFilter",
-                    "uuid_length": 8 if isinstance(config, DevConfig) else 32,
+                    "uuid_length": 8 if environment == "development" else 32,
                     "default_value": "-",
                 },
                 "email_obfuscation": {
                     "()": EmailObfuscationFilter,
-                    "obfuscated_length": 2 if isinstance(config, DevConfig) else 0,
-                }
+                    "obfuscated_length": 2 if environment == "development" else 0,
+                },
             },
             "formatters": {
                 "console": {
@@ -72,7 +74,7 @@ def configure_logging() -> None:
                 "uvicorn": {"handlers": ["default", "rotating_file"], "level": "INFO"},
                 "social": {
                     "handlers": ["default", "rotating_file"],
-                    "level": "DEBUG" if isinstance(config, DevConfig) else "INFO",
+                    "level": "DEBUG" if environment == "development" else "INFO",
                     "propagate": False,
                 },
                 "database": {"handlers": ["default"], "level": "WARNING"},

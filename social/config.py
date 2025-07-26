@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./app.db"
 
     secret_key: str = "dev-secret-change-in-production__"
+    db_force_rollback: bool = False
 
     debug: bool = False
     allowed_hosts: str = Field(default="localhost")
@@ -58,5 +59,5 @@ config = get_config()
 
 
 if __name__ == "__main__":
-    # print(config)
+    # print(BASE_DIR)
     pass

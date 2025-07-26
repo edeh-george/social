@@ -11,7 +11,7 @@ from fastapi import HTTPException, status
 logger = logging.getLogger(__name__)
 
 
-SECRET_KEY = config.SECRET_KEY
+SECRET_KEY = config.secret_key
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"])
 
