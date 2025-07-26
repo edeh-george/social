@@ -1,13 +1,3 @@
-staticfiles/
-mediafiles/
-backend/static/
-media/
-static/admin/
-
-static/admin/
-static/drf-yasg
-static/rest_framework/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -140,8 +130,6 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
-.env
 
 # Environments
 .env

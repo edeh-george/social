@@ -59,7 +59,7 @@ def configure_logging() -> None:
                 },
                 "rotating_file": {
                     "class": "logging.handlers.RotatingFileHandler",
-                    "level": "DEBUG",
+                    "level": "INFO",
                     "formatter": "file",
                     "filename": "social.log",
                     "maxBytes": 1024 * 1024,  # 1MB

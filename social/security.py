@@ -24,7 +24,7 @@ credentials_exception = HTTPException(
 
 
 def access_token_expire_minutes() -> int:
-    return 30
+    return config.ACCESS_TOKEN_EXPIRE_MINUTES or 30
 
 
 def create_access_token(email: str):

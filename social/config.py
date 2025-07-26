@@ -2,71 +2,61 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-ENV_FILE = BASE_DIR / ".env"
 
 
-class BaseConfig(BaseSettings):
-    ENV_STATE: str = "dev"
-    DATABASE_URL: Optional[str] = ""
-    DB_FORCE_ROLL_BACK: bool = False
-    SECRET_KEY: Optional[str] = ""
+class Settings(BaseSettings):
+    database_url: str = "sqlite:///./app.db"
 
-    model_config = SettingsConfigDict(
-        env_file=ENV_FILE,
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="allow",
-    )
+    secret_key: str = "dev-secret-change-in-production__"
 
+    debug: bool = False
+    allowed_hosts: str = Field(default="localhost")
 
-class DevConfig(BaseConfig):
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR}/test.db"
-    model_config = SettingsConfigDict(
-        env_prefix="DEV_",
-        env_file=ENV_FILE,
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="allow",
-    )
+    model_config = SettingsConfigDict(case_sensitive=False, env_file_encoding="utf-8")
 
-
-class ProdConfig(BaseConfig):
-    model_config = SettingsConfigDict(
-        env_prefix="PROD_",
-        env_file=ENV_FILE,
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="allow",
-    )
-
-
-class TestConfig(BaseConfig):
-    DATABASE_URL: str = "sqlite:///{BASE_DIR}/test.db"
-    DB_FORCE_ROLL_BACK: bool = True
-    SECRET_KEY: str = "test-secret"
-
-    model_config = SettingsConfigDict(
-        env_prefix="TEST_",
-        env_file=ENV_FILE,
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="allow",
-    )
+    @field_validator("secret_key")
+    def validate_secret_key(cls, v):
+        if len(v) < 32:
+            raise ValueError("Secret key must be at least 32 characters")
+        return v
 
 
 @lru_cache()
-def get_config(env_state: Optional[str] = None) -> BaseConfig:
-    env_state = env_state or BaseConfig().ENV_STATE
-    config_classes = {
-        "dev": DevConfig,
-        "prod": ProdConfig,
-        "test": TestConfig,
+def get_environment() -> str:
+    import os
+
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    return os.getenv("ENVIRONMENT", "development").lower()
+
+
+@lru_cache()
+def get_config(env_state: Optional[str] = None) -> Settings:
+    env_state = env_state or get_environment()
+
+    env_files = {
+        "production": BASE_DIR / ".env.prod",
+        "testing": BASE_DIR / ".env.test",
+        "development": BASE_DIR / ".env.dev",
     }
-    config_class = config_classes.get(env_state.lower(), DevConfig)
-    return config_class()
+
+    env_file = env_files.get(env_state, BASE_DIR / ".env.dev")
+
+    try:
+        return Settings(_env_file=str(env_file) if env_file.exists() else None)
+    except Exception as e:
+        print(f"Configuration error: {e}")
+        return Settings()
 
 
-config = get_config(BaseConfig().ENV_STATE)
+config = get_config()
+
+
+if __name__ == "__main__":
+    # print(config)
+    pass

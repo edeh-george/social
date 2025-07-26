@@ -9,6 +9,7 @@ from routers.users import router as user_router
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,21 @@ async def lifespan(app: FastAPI):
     yield
     await database.disconnect()
 
+origins = [
+    "http://localhost:3000"
+]
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CorrelationIdMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = origins,
+    allow_credentials = True,
+    allow_headers = ["*"],
+    allow_methods = [
+        "PUT", "PATCH", "DELETE", "POST", "GET"
+    ]
+)
 
 
 app.include_router(post_router)
@@ -36,6 +49,6 @@ async def http_exception_handle_logging(request, exc):
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn   #noqa: E402
 
-    uvicorn.run("main:app", host="localhost", port=8443, log_level="info", reload=True)
+    uvicorn.run("main:app", host="localhost", port=8443, log_level="debug", reload=True)
